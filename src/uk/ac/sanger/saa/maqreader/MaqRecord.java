@@ -72,5 +72,10 @@ public class MaqRecord {
 		info2 = maqMap1t.info2.get();
 		chromosome = refNames[(int) maqMap1t.seqid.get()];
 	}
+	@Override
+	public String toString(){
+		
+		return name + " " + chromosome + " " + flags;
+	}
 
 }

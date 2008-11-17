@@ -53,7 +53,7 @@ public class MaqmapReader {
 
 		
 		//need to skip 64 bits
-		ByteBuffer junk = ByteBuffer.allocate(64);
+		ByteBuffer junk = ByteBuffer.allocate(128);
 		while (junk.hasRemaining()){
 			in.read(junk);
 		}
@@ -68,10 +68,10 @@ public class MaqmapReader {
 			if (!read(maqMap1t)){
 				return null;
 			}
+			
 			return new MaqRecord(maqMap1t,refNames);
 		}
 
-		
 	}
 	
 	
@@ -91,7 +91,9 @@ public class MaqmapReader {
 		MaqmapReader reader = new MaqmapReader(new File(args[0]));
 		MaqRecord record = null;
 		
+		System.out.println(reader.nref);
 		while ((record = reader.getRecord())!=null){
+			
 			System.out.println(record);
 		}
 		

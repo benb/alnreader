@@ -8,7 +8,11 @@ import java.nio.ByteOrder;
 import java.util.List;
 
 import javolution.io.Struct;
+import javolution.io.Struct.Signed32;
+import javolution.io.Struct.Signed8;
 import javolution.io.Struct.UTF8String;
+import javolution.io.Struct.Unsigned32;
+import javolution.io.Struct.Unsigned8;
 import javolution.text.TextBuilder;
 
 /**
@@ -41,6 +45,7 @@ public class Maqmap1_t extends Struct {
 	 public final Signed32 dist = new Signed32(); 
 	 
 	 public final UTF8String name = new UTF8String(MAX_NAMELEN);
+	 
 	 
 	 //public String refname;
 	 
