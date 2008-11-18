@@ -8,11 +8,7 @@ import java.nio.ByteOrder;
 import java.util.List;
 
 import javolution.io.Struct;
-import javolution.io.Struct.Signed32;
-import javolution.io.Struct.Signed8;
 import javolution.io.Struct.UTF8String;
-import javolution.io.Struct.Unsigned32;
-import javolution.io.Struct.Unsigned8;
 import javolution.text.TextBuilder;
 
 /**
@@ -24,30 +20,54 @@ import javolution.text.TextBuilder;
 public class Maqmap1_t extends Struct {
 	
 	//could be 128
-	 public static final int MAX_READLEN=63;
 	 
 	 public static final int MAX_NAMELEN=36;
-	 public final Unsigned8[] seq = array(new Unsigned8[MAX_READLEN]);
-	 public final Signed8 mapQ = new Signed8();
+	 public final Unsigned8[] seq;
+	 public final Signed8 mapQ;
 	 //uint8_t seq[MAX_READLEN]; /* the last base is the single-end mapping quality. */
-	 public final Unsigned8 size = new Unsigned8();
-	 public final Unsigned8 map_qual = new Unsigned8();
-	 public final Unsigned8 info1 = new Unsigned8();
-	 public final Unsigned8 info2 = new Unsigned8();
-	 public final Unsigned8 c0 = new Unsigned8();
-	 public final Unsigned8 c1 = new Unsigned8();
+	 public final Unsigned8 size;
+	 public final Unsigned8 map_qual;
+	 public final Unsigned8 info1;
+	 public final Unsigned8 info2;
+	 public final Unsigned8 c0;
+	 public final Unsigned8 c1;
 	 
-	 public final Unsigned8 flag = new Unsigned8();
-	 public final Unsigned8 alt_qual = new Unsigned8();
+	 public final Unsigned8 flag;
+	 public final Unsigned8 alt_qual;
 	 
-	 public final Unsigned32 seqid = new Unsigned32();
-	 public final Unsigned32 pos = new Unsigned32();
-	 public final Signed32 dist = new Signed32(); 
+	 public final Unsigned32 seqid;
+	 public final Unsigned32 pos;
+	 public final Signed32 dist; 
 	 
-	 public final UTF8String name = new UTF8String(MAX_NAMELEN);
+	 public final UTF8String name;
 	 
+	 private Maqmap1_t(int MAX_READLEN){
+		 super();
+		 seq = array(new Unsigned8[MAX_READLEN]);
+		 mapQ = new Signed8();
+		 size = new Unsigned8();
+		 map_qual = new Unsigned8();
+		 info1 = new Unsigned8();
+		 info2 = new Unsigned8();
+		 c0 = new Unsigned8();
+		 c1 = new Unsigned8();
+		 flag = new Unsigned8();
+		 alt_qual = new Unsigned8();
+		 seqid = new Unsigned32();
+		 pos = new Unsigned32();
+		 dist = new Signed32(); 
+		 
+		 name = new UTF8String(MAX_NAMELEN);
+	 }
 	 
-	 //public String refname;
+	 public static Maqmap1_t factory(boolean newFormat){
+		 if (newFormat){
+			 return new Maqmap1_t(127);
+		 }else {
+			 return new Maqmap1_t(63);
+		 }
+	 }
+	 
 	 
 	 
 	 public ByteOrder byteOrder() {

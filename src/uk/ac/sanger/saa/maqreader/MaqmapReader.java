@@ -27,7 +27,8 @@ public class MaqmapReader {
 	private final int nref;
 	
 	private final String[] refNames;
-	public MaqmapReader(File f) throws FileNotFoundException, IOException{
+	
+	public MaqmapReader(File f,boolean newFormat) throws FileNotFoundException, IOException{
 		InputStream st = new GZIPInputStream(new FileInputStream(f));
 		in = Channels.newChannel(st);
 		Maqmap_tA maqMapA = new Maqmap_tA();
@@ -59,7 +60,7 @@ public class MaqmapReader {
 		}
 		
 
-		maqMap1t = new Maqmap1_t();
+		maqMap1t = Maqmap1_t.factory(newFormat);
 		
 	}
 	
@@ -72,6 +73,19 @@ public class MaqmapReader {
 			return new MaqRecord(maqMap1t,refNames);
 		}
 
+	}
+	public Maqmap1_t getStruct() throws IOException{
+		while (true){
+			if (!read(maqMap1t)){
+				return null;
+			}
+			return maqMap1t;
+		}
+
+	}
+	
+	public String[] getRefNames(){
+		return refNames;
 	}
 	
 	
@@ -88,7 +102,7 @@ public class MaqmapReader {
 	public static void main(String args[]) throws FileNotFoundException, IOException{
 		
 		// Backward compatability thing:
-		MaqmapReader reader = new MaqmapReader(new File(args[0]));
+		MaqmapReader reader = new MaqmapReader(new File(args[0]),(args.length>1));
 		MaqRecord record = null;
 		
 		System.out.println(reader.nref);

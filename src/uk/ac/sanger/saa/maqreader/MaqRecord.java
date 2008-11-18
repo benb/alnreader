@@ -6,57 +6,41 @@ public class MaqRecord {
 
  public static final int MAX_READLEN=63;
 	 
-	 final char[] sequence;
-	 final byte[] quality;
+	public final short mapQ;
 	 
-	 short mapQ;
-	 
-	 final short size;
+	 public final short size;
 	 
 	 //if PAIRFLAG_SW|PAIRFLAG_PAIRED
-	 short indelLength;
-	 short indelPosition;
-	 short mateMapQ;
+	 public short indelLength;
+	 public short indelPosition;
+	 public short mateMapQ;
 	 
-	 short seMapQ;
-	 short finalMapQ;
-	 short lowerMapQ;
+	 public short seMapQ;
+	 public short finalMapQ;
+	 public short lowerMapQ;
 	 
-	 final short info1A;
-	 final short info1B;
-	 final short info2;
+	 public final short info1A;
+	 public final short info1B;
+	 public final short info2;
 	 
-	 int dist;
+	 public final int dist;
 	 
-	 long pos;
+	 public final long pos;
 	 
-	 String chromosome;
+	 public String chromosome;
 	 
-	 final Set<MaqFlags> flags;
-	 final String name;
-	 private final static char[] acgt = {'A','C','G','T'};
+	 public final boolean forward;
+	 
+	 public final Set<MaqFlags> flags;
+	 public final String name;
 		
+	 
+	 
 	public MaqRecord(Maqmap1_t maqMap1t, String[] refNames) {
 		flags = MaqFlags.getFlags(maqMap1t.flag.get());
 		name = maqMap1t.name.get();
 		size = maqMap1t.size.get();
-		sequence = new char[size];
-		
-		for (int c = 0; c < size; c++){
-			 short i = maqMap1t.seq[c].get();
-			 if (i==0){
-				 sequence[c]='N';
-			 }else {
-				 sequence[c]=(acgt[i>>6]);
-			 }
-		 }
-		
-		quality = new byte[size];
-		for (int c = 0; c < size; c++){
-			 short i = maqMap1t.seq[c].get();
-			 quality[c]=(byte) (i & 0x3f);
-		}
-		
+	
 		if (flags.contains(MaqFlags.PAIRFLAG_SW)||flags.contains(MaqFlags.PAIRFLAG_PAIRED)){
 			indelLength=maqMap1t.mapQ.get();
 			indelPosition=maqMap1t.map_qual.get();
@@ -71,6 +55,10 @@ public class MaqRecord {
 		info1B=(short)((maqMap1t.info1.get() & ~0xf)<<4);
 		info2 = maqMap1t.info2.get();
 		chromosome = refNames[(int) maqMap1t.seqid.get()];
+		pos = ((maqMap1t.pos.get()>>1)+1);
+		forward = (((int)maqMap1t.pos.get() & 1)==0);
+		dist = maqMap1t.dist.get();
+		mapQ = maqMap1t.map_qual.get();
 	}
 	@Override
 	public String toString(){
