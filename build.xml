@@ -2,7 +2,7 @@
 <project default="main" xmlns:artifact="urn:maven-artifact-ant">
         <import file="local.xml" optional="true"/>
 
-        <property name="out.jar" value="CigarReader.jar"/>
+        <property name="out.jar" value="maqreader.jar"/>
 
         <property name="root.dir" value="." />
         <property name="sources.dir" value="${root.dir}${file.separator}src" />
@@ -39,7 +39,7 @@
 
                 <artifact:dependencies pathId="scala.tasks.classpath">
                         <dependency groupId="org.scala-lang" artifactId="scala-compiler" version="2.7.2" scope="compile" />
-                        <dependency groupId="javolution" artifactId="javolution" version="5.2.6" scope="compile" />
+                        <dependency groupId="org.javolution" artifactId="javolution" version="5.2.6" scope="compile" />
                         <remoteRepository id="scala-tools.repository" url="http://scala-tools.org/repo-releases" />
                 </artifact:dependencies>
 
