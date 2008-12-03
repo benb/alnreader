@@ -6,7 +6,7 @@ object CigarReverse{
   def main(args:Array[String])={
     args.foreach{a=>
       Source.fromFile(a).getLines.foreach{l=>
-        println(Cigar(a).reverse)
+        println(Cigar(l).reverse)
       }
     }
   }

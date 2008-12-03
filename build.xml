@@ -3,6 +3,7 @@
         <import file="local.xml" optional="true"/>
 
         <property name="out.jar" value="maqreader.jar"/>
+        <property name="out.dir" value="out"/>
 
         <property name="root.dir" value="." />
         <property name="sources.dir" value="${root.dir}${file.separator}src" />
@@ -116,7 +117,6 @@
         <target name="deploy" depends="compress">
                 <mkdir dir="${out.dir}"/>
                 <copy todir="${out.dir}" file="${out.jar}"/>
-                <copy todir="${out.dir}" file="${exec.script}"/>
                 <copy todir="${out.dir}/lib/">
                             <fileset refid="project.dependency.fileset" />
                             <mapper type="flatten"/>
