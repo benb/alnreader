@@ -3,8 +3,6 @@ package uk.ac.sanger.saa.maqreader;
 import java.util.EnumSet;
 import java.util.Set;
 
-import com.sun.xml.internal.bind.v2.model.core.EnumLeafInfo;
-
 public enum MaqFlags {
 
 	PAIRFLAG_FF      (0x01),

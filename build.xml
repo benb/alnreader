@@ -1,31 +1,175 @@
 <?xml version="1.0" ?>
-<project default="main">
-<import file="local.xml" optional="true"/>
-<property name="out.jar" value="maqreader.jar"/>
-    <target name="main" depends="compile,compress" description="Main target">
-        <echo>
-            Building the .jar file.
-        </echo>
-    </target>
-  
-    <target name="compile" description="Compilation target">
-    	<mkdir dir="bin"/>
-        <javac srcdir="src" destdir="bin">
-                <classpath>
-                        <fileset dir="lib">
-                                <include name="*.jar"/>
-                        </fileset>
-                </classpath>
-        </javac>
-    </target>
-  
- 
+<project default="main" xmlns:artifact="urn:maven-artifact-ant">
+        <import file="local.xml" optional="true"/>
 
-  <target name="compress" description="Compression target" depends="compile">
-          <jar jarfile="${out.jar}" basedir="bin">
-                  <manifest>
-                          <attribute name="Main-Class" value="uk.ac.sanger.saa.maqreader.MaqmapReader"/>
-                  </manifest>
-          </jar>
-  </target>
+        <property name="out.jar" value="CigarReader.jar"/>
+
+        <property name="root.dir" value="." />
+        <property name="sources.dir" value="${root.dir}${file.separator}src" />
+        <property name="compile.dir" value="${root.dir}${file.separator}target${file.separator}classes" />
+        <property name="test.dir" value="${root.dir}${file.separator}target${file.separator}test-classes" />
+        <property name="lib.dir" value="${root.dir}${file.separator}lib" />
+        <property name="maven.ant.tasks.jar" value="${lib.dir}${file.separator}maven-ant-tasks-2.0.9.jar"/>
+        <property name="maven.ant.tasks.bootstrap.location" value="http://apache.inetbridge.net/maven/binaries/maven-ant-tasks-2.0.9.jar"/>
+        <available property="maven.ant.tasks.jar.exists" file="${maven.ant.tasks.jar}"/>
+
+        <property name="package.name" value="${ant.project.name}.jar"/>
+        <property name="package.location" value="${compile.dir}${file.separator}${package.name}"/>
+
+
+        <!-- This will download the "latest version" of the maven-ant-tasks if needed -->
+        <target name="bootstrap.maven.tasks" unless="maven.ant.tasks.jar.exists">
+                <mkdir dir="${lib.dir}"/>
+                <get src="${maven.ant.tasks.bootstrap.location}" dest="${maven.ant.tasks.jar}"/>
+        </target>
+
+        <!-- This will initialize all the maven ant tasks -->
+        <target name="init.maven.tasks" depends="bootstrap.maven.tasks">
+                <path 
+                        id="maven.ant.tasks.classpath" 
+                        path="${maven.ant.tasks.jar}" />
+                <typedef 
+                        resource="org/apache/maven/artifact/ant/antlib.xml" 
+                        uri="urn:maven-artifact-ant" 
+                        classpathref="maven.ant.tasks.classpath" /> 
+        </target>
+
+        <!-- This bootstraps the scala ant tasks from the maven repository and initializes them -->
+        <target name="init.scala.tasks" depends="init.maven.tasks">
+
+                <artifact:dependencies pathId="scala.tasks.classpath">
+                        <dependency groupId="org.scala-lang" artifactId="scala-compiler" version="2.7.2" scope="compile" />
+                        <dependency groupId="javolution" artifactId="javolution" version="5.2.6" scope="compile" />
+                        <remoteRepository id="scala-tools.repository" url="http://scala-tools.org/repo-releases" />
+                </artifact:dependencies>
+
+                <taskdef resource="scala/tools/ant/antlib.xml">
+                        <classpath refid="scala.tasks.classpath" />
+                </taskdef>
+
+        </target>
+
+
+
+
+        <!-- Initializes the classpath for the project dependencies-->
+        <target name="init.project.dependencies" depends="init.maven.tasks">
+                <artifact:dependencies pathId="project.classpath" filesetId="project.dependency.fileset">
+                        <dependency groupId="org.scala-lang" artifactId="scala-library" version="2.7.2" scope="compile" />
+                        <remoteRepository id="scala-tools.repository" url="http://scala-tools.org/repo-releases" />
+                        <dependency groupId="junit" artifactId="junit" version="4.5" scope="compile" />
+                </artifact:dependencies>
+        </target>
+
+        <target name="hg-info">
+                <exec executable="hg" outputproperty="hgrevision">
+                        <arg value="id"/>
+                        <arg value="-n"/>
+                        <arg value="-i"/>
+                        <arg value="-t"/>
+                </exec>
+                <echo>Repository Version: ${hgrevision}</echo>
+        </target>
+        <target name="main" depends="compile" description="Main target">
+        </target>
+
+        <target name="init" depends="init.project.dependencies">
+                <mkdir dir="${compile.dir}"/>
+        </target>
+
+        <target name="compile.scala" depends="init,init.scala.tasks">
+                <scalac destdir="${compile.dir}">
+                        <src path="src/main/java"/>
+                        <src path="src/main/scala"/>
+                        <classpath refid="project.classpath"/>
+                        <classpath refid="scala.tasks.classpath"/>
+                </scalac>
+        </target>
+
+        <target name="compile.java" depends="init,compile.scala">
+                <javac destdir="${compile.dir}">
+                        <src path="src/main/java"/>
+                        <classpath refid="project.classpath"/>
+                        <classpath refid="scala.tasks.classpath"/>
+                </javac>
+        </target>
+
+        <target name="compile" depends="compile.scala,compile.java"/>
+        <target name="compress" description="Compression target" depends="compile,hg-info">
+                <jar jarfile="${out.jar}" basedir="${compile.dir}">
+                        <manifest>
+                                <attribute name="Main-Class" value="uk.ac.sanger.saa.cigarreader.CigarReader"/>
+                                <attribute name="Implementation-Version" value="${hgrevision}"/>
+                        </manifest>
+                </jar>
+        </target>
+
+        <target name="removecompile"
+                description="Delete old compile and dist directories">
+                <delete dir="${compile.dir}"/>
+                <delete dir="${test.dir}"/>
+                <delete file="${out.jar}"/>
+                <delete file="${out-all.jar}"/>
+                <delete file="Svelte-gcj.jar"/>
+        </target>
+        <target name="clean" depends="removecompile,compile"/>
+        <target name="deploy" depends="compress">
+                <mkdir dir="${out.dir}"/>
+                <copy todir="${out.dir}" file="${out.jar}"/>
+                <copy todir="${out.dir}" file="${exec.script}"/>
+                <copy todir="${out.dir}/lib/">
+                            <fileset refid="project.dependency.fileset" />
+                            <mapper type="flatten"/>
+                </copy>
+
+
+
+                <chmod file="${out.dir}/vip" perm="u+x"/>
+                <tstamp>
+                        <format property="deploytime" pattern="yyyy MMMM dd HH:mm:ss" locale="en"/>
+                </tstamp>
+
+                <echo message="Deployed at: ${deploytime}" />
+        </target>
+
+        <target name="test-compile" depends="compile">
+                <mkdir dir="${test.dir}"/>
+                <scalac destdir="${test.dir}">
+                        <src path="src/test/scala"/>
+                        <src path="src/test/java"/>
+                        <classpath refid="scala.tasks.classpath" />
+                        <classpath refid="project.classpath" />
+                        <classpath> <pathelement path="${compile.dir}"/></classpath>
+                </scalac>
+
+                <javac destdir="${test.dir}" debug="on">
+                        <src path="src/test/java"/>
+                        <classpath refid="project.classpath" />
+                        <classpath> <pathelement path="${compile.dir}"/></classpath>
+                </javac>
+        </target>
+        <path id="test.classpath">
+                <path refid="project.classpath"/>
+                <pathelement path="${test.dir}"/>
+                <pathelement path="${compile.dir}"/>
+        </path>
+
+
+        <target name="test" depends="test-compile">
+                <mkdir dir="junit-out"/>
+                <junit fork="no" printsummary="true" haltonfailure="true">
+                        <classpath refid="test.classpath" />
+                        <formatter type="plain" usefile="false" />
+
+                         <batchtest todir="junit-out">
+                                 <!--<fileset dir="src/test/java">
+                                        <include name="**/*Test.java"/>
+                                </fileset>-->
+                                <fileset dir="${test.dir}">
+                                        <include name="**/*Test.class"/>
+                                </fileset>
+                        </batchtest>
+                </junit>
+        </target>
+
 </project>
