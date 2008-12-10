@@ -1,7 +1,6 @@
 package uk.ac.sanger.saa.cigarreader
 import scala.Array.Projection
 import scala.io.Source
-import java.lang.Long
 object CigarReader{
   def main(args:Array[String]){
     val str = "cigar::50 SRR002579.3.q1k 157 2 - 6 3158335 3158490 + 119 M 116 I 1 M 40"
@@ -51,7 +50,8 @@ object Mapping{
   }
 }
 
-class Cigar(name:String,qual:Int,mapStart:Long,mapEnd:Long,chr:String,readStart:Int,readEnd:Int,dir:Boolean,swScore:Int,mapping:Seq[Mapping]){
+class Cigar(name:String,qual:Int,mapStart:BigInt,mapEnd:BigInt,chr:String,readStart:Int,readEnd:Int,dir:Boolean,swScore:Int,mapping:Seq[Mapping]){
+  implicit def toBigIntI(x:Int)={BigInt(x)}
   override def toString():String ={
     //cigar::50 SRR002579.3.q1k 157 2 - 6 3158335 3158490 + 119 M 156 
     "cigar::"+qual+" "+name+" "+readStart+ " " + readEnd + " " + {if (dir)"+"else{"-"}} + " " + chr + " " + mapStart + " " + mapEnd + " + " + swScore + " " + mapping.mkString(""," ","")
@@ -59,11 +59,14 @@ class Cigar(name:String,qual:Int,mapStart:Long,mapEnd:Long,chr:String,readStart:
   def reverse():Cigar = {
     new Cigar(name,qual,mapStart,mapEnd,chr,readEnd,readStart,!dir,swScore,mapping.reverse)
   }
+  def overlaps(pos:Int,window:Int){
+    ((pos>(mapStart-window)) && (pos<(mapEnd+window)))
+  }
 }
 
 object Cigar{
   def apply(s:String)= {
-    implicit def toLong(x:String)={Long.parseLong(x)}
+    implicit def toBigInt(x:String)={BigInt(x)}
     implicit def toInt(x:String)={Integer.parseInt(x)}
     val fields = s.split(" ")
     val qual=fields(0).split("::")(1)
@@ -76,6 +79,6 @@ object Cigar{
     val chr = fields(5)
     val mapping=Mapping(fields.slice(10,s.length))
     val swScore=fields(9)
-    new Cigar(name,qual,toLong(mapStart),toLong(mapEnd),chr,readStart,readEnd,dir,swScore,mapping)
+    new Cigar(name,qual,mapStart,mapEnd,chr,readStart,readEnd,dir,swScore,mapping)
   }
 }
