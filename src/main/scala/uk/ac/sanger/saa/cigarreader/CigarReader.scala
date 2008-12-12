@@ -1,6 +1,7 @@
 package uk.ac.sanger.saa.cigarreader
 import scala.Array.Projection
 import scala.io.Source
+import scala.reflect._
 object CigarReader{
   def main(args:Array[String]){
     val str = "cigar::50 SRR002579.3.q1k 157 2 - 6 3158335 3158490 + 119 M 116 I 1 M 40"
@@ -50,8 +51,12 @@ object Mapping{
   }
 }
 
-class Cigar(name:String,qual:Int,mapStart:BigInt,mapEnd:BigInt,chr:String,readStart:Int,readEnd:Int,dir:Boolean,swScore:Int,mapping:Seq[Mapping]){
+
+class Cigar(val name:String,val qual:Int,val mapStart:BigInt,val mapEnd:BigInt,val chr:String,val readStart:Int,val readEnd:Int,val dir:Boolean,val swScore:Int,val mapping:Seq[Mapping]){
+  
   implicit def toBigIntI(x:Int)={BigInt(x)}
+  import scala.Math.{min,max}
+  
   override def toString():String ={
     //cigar::50 SRR002579.3.q1k 157 2 - 6 3158335 3158490 + 119 M 156 
     "cigar::"+qual+" "+name+" "+readStart+ " " + readEnd + " " + {if (dir)"+"else{"-"}} + " " + chr + " " + mapStart + " " + mapEnd + " + " + swScore + " " + mapping.mkString(""," ","")
@@ -59,9 +64,34 @@ class Cigar(name:String,qual:Int,mapStart:BigInt,mapEnd:BigInt,chr:String,readSt
   def reverse():Cigar = {
     new Cigar(name,qual,mapStart,mapEnd,chr,readEnd,readStart,!dir,swScore,mapping.reverse)
   }
-  def overlaps(pos:Int,window:Int){
+  def overlaps(pos:Int,window:Int):Boolean={
     ((pos>(mapStart-window)) && (pos<(mapEnd+window)))
   }
+  def overlaps(otherChr:String,pos:Int,window:Int):Boolean={
+    (otherChr==chr && overlaps(pos,window))
+  }
+  private def min(i:BigInt,j:BigInt)={
+    if (i<j){i}else{j}
+  }
+  private def max(i:BigInt,j:BigInt)={
+    if(i<j){j}else{i}
+  }
+  
+  def overlaps(range:(BigInt,BigInt),window:Int):Boolean = {
+ 
+    val(i,j)=range
+    
+    intOverlap(min(i,j)-window,max(i,j)+window,min(mapStart,mapEnd),max(mapStart,mapEnd))
+  }
+  def overlaps(otherChr:String,range:(BigInt,BigInt),window:Int):Boolean={
+    otherChr==chr && overlaps(range,window)
+  }
+  
+  private def intOverlap(low:BigInt,high:BigInt,low2:BigInt,high2:BigInt):Boolean={
+    ((low<=low2 && high>=low2)||(low <= high2 && high >= high2))
+  }
+  
+  
 }
 
 object Cigar{
@@ -79,6 +109,8 @@ object Cigar{
     val chr = fields(5)
     val mapping=Mapping(fields.slice(10,s.length))
     val swScore=fields(9)
-    new Cigar(name,qual,mapStart,mapEnd,chr,readStart,readEnd,dir,swScore,mapping)
+    val x = new Cigar(name,qual,mapStart,mapEnd,chr,readStart,readEnd,dir,swScore,mapping)
+    
+    x 
   }
 }
