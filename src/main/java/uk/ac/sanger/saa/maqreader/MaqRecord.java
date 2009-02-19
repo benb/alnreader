@@ -63,7 +63,7 @@ public class MaqRecord {
 	@Override
 	public String toString(){
 		
-		return name + " " + chromosome + " " + flags;
+		return name + " " + chromosome + " " + pos + " " + forward+ " " + dist + " " +  flags;
 	}
 
 }
