@@ -1,0 +1,4 @@
+This is a small project to provide a library to read MAQ binary output and cigar lines produced by SSAHA2.
+
+It relies on the Javolution library for binary I/O. No instructions yet - message me if you are interested.
+
