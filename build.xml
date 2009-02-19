@@ -2,7 +2,7 @@
 <project default="main" xmlns:artifact="urn:maven-artifact-ant">
         <import file="local.xml" optional="true"/>
 
-        <property name="out.jar" value="maqreader.jar"/>
+        <property name="out.jar" value="alnreader.jar"/>
         <property name="out.dir" value="out"/>
 
         <property name="root.dir" value="." />

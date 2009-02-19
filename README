@@ -2,3 +2,5 @@ This is a small project to provide a library to read MAQ binary output and cigar
 
 It relies on the Javolution library for binary I/O. No instructions yet - message me if you are interested.
 
+Run "ant compress" to build a jar file.
+
