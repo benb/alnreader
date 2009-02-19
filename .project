@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
-	<name>maqreader</name>
-	<comment>Cloned from ssh://bitbucket.org/bpb/maqreader</comment>
+	<name>alnreader</name>
 	<projects>
 	</projects>
 	<buildSpec>
